@@ -73,6 +73,7 @@ db.serialize(() => {
         smtp_port INTEGER,
         smtp_user TEXT,
         smtp_pass TEXT,
+        smtp_from TEXT,
         cron_enabled INTEGER,
         email_send_time TEXT,
         email_delay_days INTEGER,
@@ -705,7 +706,7 @@ function sendPlannerEmail(startDate, endDate) {
                 
                 // Define email options
                 const mailOptions = {
-                    from: `"MedAssist" <${smtpConfig.smtp_user}>`,
+                    from: `"MedAssist" <${smtpConfig.smtp_from}>`,
                     to: smtpConfig.recipient_email,
                     subject: dayDifference === 1 
                         ? `Trip Planner - 1 day (${formattedStartDate})` 
@@ -789,7 +790,7 @@ function startCronJob(smtpConfig) {
                             const formattedDate = formatLocalDate(now.toISOString()); // Format the current date
 
                             transporter.sendMail({
-                                from: `"MedAssist" <${smtpConfig.smtp_user}>`,
+                                from: `"MedAssist" <${smtpConfig.smtp_from}>`,
                                 to: smtpConfig.recipient_email,
                                 subject: `Reorder Reminder ${formattedDate}`,
                                 html: pillTableHTML, // Send the full table
@@ -929,8 +930,9 @@ app.post('/update-smtp-settings', (req, res) => {
     const { 
         smtp_host, 
         smtp_port, 
-        smtp_user, 
-        smtp_pass, 
+        smtp_user,
+        smtp_pass,
+        smtp_from,
         cron_enabled, 
         email_send_time,
         email_delay_days,
@@ -955,7 +957,8 @@ app.post('/update-smtp-settings', (req, res) => {
                 SET smtp_host = ?,
                     smtp_port = ?,
                     smtp_user = ?, 
-                    smtp_pass = CASE WHEN ? = '' THEN smtp_pass ELSE ? END, 
+                    smtp_pass = CASE WHEN ? = '' THEN smtp_pass ELSE ? END,
+                    smtp_from = ?,
                     cron_enabled = ?,
                     email_send_time = ?,
                     email_delay_days = ?,
@@ -969,6 +972,7 @@ app.post('/update-smtp-settings', (req, res) => {
                 smtp_user, 
                 smtp_pass,   // Check this value to decide whether to update
                 smtp_pass,   // Actual value to set if not empty
+                smtp_from,
                 cronStatus, 
                 email_send_time,
                 email_delay_days,
@@ -990,18 +994,19 @@ app.post('/update-smtp-settings', (req, res) => {
             });
         } else {
             // Insert a new record if none exists
-            db.run('INSERT INTO smtp (smtp_host, smtp_port, smtp_user, smtp_pass, cron_enabled, email_send_time, email_delay_days, recipient_email, username, min_days_left) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            db.run('INSERT INTO smtp (smtp_host, smtp_port, smtp_user, smtp_pass, smtp_from, cron_enabled, email_send_time, email_delay_days, recipient_email, username, min_days_left) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
                 [
                     smtp_host,          // 1
                     smtp_port,          // 2
                     smtp_user,          // 3
                     smtp_pass,          // 4
-                    cronStatus,         // 5
-                    email_send_time,    // 6
-                    email_delay_days || 1, // 7
-                    recipient_email,     // 8
-                    username || 'User',  // 9
-                    min_days_left || 10, // 10
+                    smtp_from,          // 5
+                    cronStatus,         // 6
+                    email_send_time,    // 7
+                    email_delay_days || 1, // 8
+                    recipient_email,     // 9
+                    username || 'User',  // 10
+                    min_days_left || 10, // 11
                 ], 
                 (err) => {
                     if (err) {
