@@ -1,11 +1,11 @@
 services:
   medassist:
-    container_name: medassist
-    image: ghcr.io/njic/medassist:latest
+    container_name: medassisttest
+    image: ghcr.io/Wolbaz/medassist:beta
     restart: always
     environment:
       - TZ=Etc/UTC
     ports:
-      - 3111:3111
+      - 3112:3111
     volumes:
-      - /path/to/database/directory:/app/database
+      - /mnt/user/appdata/medassisttest/database:/app/database
