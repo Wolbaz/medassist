@@ -1471,6 +1471,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 smtp_port: 587,
                 smtp_user: '',
                 smtp_pass: '', // Assuming password should not be pre-filled for security reasons
+                smtp_from: '',
                 recipient_email: '',
             };
     
@@ -1488,6 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('smtp_port').value = data.smtp_port ?? defaultSettings.smtp_port;
             document.getElementById('smtp_user').value = data.smtp_user ?? defaultSettings.smtp_user;
             document.getElementById('smtp_pass').value = ''; // Keep password field empty for security
+            document.getElementById('smtp_from').value = data.smtp_from ?? defaultSettings.smtp_from;
             document.getElementById('recipient_email').value = data.recipient_email ?? defaultSettings.recipient_email;            
         }
     
